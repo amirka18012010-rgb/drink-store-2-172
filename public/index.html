@@ -3,12 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DrinkStore - Магазин напитков</title>
+  
+  <!-- SEO -->
+  <title>🥤 Магазин напитков — купить вкусные напитки с доставкой</title>
+  <meta name="description" content="Широкий ассортимент газировок, соков, воды, энергетиков и чая. Быстрая доставка по Москве и России. Заказывайте напитки онлайн!">
+  <meta name="keywords" content="магазин напитков, купить напитки, доставка напитков, газировка, сок, вода, энергетик, чай, кофе">
+  
+  <!-- Open Graph (для соцсетей) -->
+  <meta property="og:title" content="Магазин напитков — купить вкусные напитки">
+  <meta property="og:description" content="Широкий ассортимент напитков с доставкой. Заказывайте онлайн!">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://drink-store-2-172-1.onrender.com/">
+  <meta property="og:image" content="https://drink-store-2-172-1.onrender.com/logo.png">
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥤</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- Боковой хедер (фиксированный, не зависит от фона) -->
-<div class="side-header" id="sideHeader">
+<!-- Боковой хедер -->
+<div class="side-header">
   <a href="/about.html" class="side-link" title="О нас">ℹ️</a>
   <a href="/contacts.html" class="side-link" title="Контакты">📞</a>
   <a href="https://wa.me/79123456789?text=Здравствуйте!%20У%20меня%20есть%20вопрос" target="_blank" class="side-link whatsapp" title="WhatsApp">
@@ -22,24 +35,29 @@
   <header class="header">
     <h1>🥤 <span>Drink</span>Store</h1>
     <div class="header-actions">
-      <!-- Кнопка админки (по центру сверху, скрыта по умолчанию) -->
-      <a href="admin.html" class="admin-btn" id="adminLink" style="display:none;">⚙️ Админка</a>
+      <!-- Кнопка корзины -->
       <button class="cart-btn" id="openCartBtn">🛒 <span class="badge" id="cartCount">0</span></button>
+      <!-- Уведомления -->
       <button id="notifBtn" class="admin-btn" style="background:#f39c12; position:relative; padding:8px 16px;">
         🔔 <span id="notifBadge" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border-radius:50%; padding:2px 6px; font-size:12px; display:none;">0</span>
       </button>
+      <!-- Кнопки входа/регистрации -->
       <div id="authButtons">
         <button id="loginBtn" class="admin-btn" style="background:#3498db;">Войти</button>
         <button id="registerBtn" class="admin-btn" style="background:#2ecc71;">Регистрация</button>
       </div>
+      <!-- Информация о пользователе (скрыта) -->
       <div id="userInfo" style="display:none; align-items:center; gap:10px;">
         <span id="userName" style="color:#2c3e50; font-weight:600;"></span>
         <a href="/profile.html" class="admin-btn" style="background:#9b59b6; text-decoration:none;">👤 Профиль</a>
         <button id="logoutBtn" class="admin-btn" style="background:#e74c3c;">Выйти</button>
       </div>
+      <!-- Кнопка админки (скрыта) -->
+      <a href="admin.html" class="admin-btn" id="adminLink" style="display:none;">⚙️ Админка</a>
     </div>
   </header>
 
+  <!-- Фильтр и поиск -->
   <div class="filter-section">
     <label for="categoryFilter">Категория:</label>
     <select id="categoryFilter"><option value="all">Все</option></select>
@@ -47,6 +65,7 @@
     <button class="reset-btn" id="resetFilterBtn">Сбросить</button>
   </div>
 
+  <!-- Список товаров -->
   <div class="products-grid" id="productsGrid"></div>
   <div class="pagination" id="pagination"></div>
 </div>

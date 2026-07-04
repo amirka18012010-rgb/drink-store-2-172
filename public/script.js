@@ -40,7 +40,7 @@ function loadCategories() {
     .catch(err => console.error('Ошибка загрузки категорий:', err));
 }
 
-// ----- Загрузка товаров -----
+// ----- Загрузка товаров с пагинацией -----
 function loadProducts(page = 1) {
   const category = categoryFilter.value;
   const search = searchInput.value.trim();
@@ -173,7 +173,7 @@ if (newsOverlay) {
   });
 }
 
-// ----- Аутентификация (с исправленной админ-кнопкой) -----
+// ----- Аутентификация -----
 function loadUser() {
   fetch('/api/auth/me')
     .then(res => res.json())
@@ -186,10 +186,7 @@ function loadUser() {
         if (authBtns) authBtns.style.display = 'none';
         if (userInfoDiv) userInfoDiv.style.display = 'flex';
         if (userNameSpan) userNameSpan.textContent = `${data.user.first_name} ${data.user.last_name}`;
-        
-        // ========== ГЛАВНОЕ: показываем админ-кнопку ==========
         checkAdminStatus();
-        
         loadFavorites();
         checkNews();
       } else {
@@ -206,33 +203,135 @@ function loadUser() {
 }
 
 function checkAdminStatus() {
-  console.log('🔍 Проверка статуса админа...');
   fetch('/api/admin/status')
     .then(res => res.json())
     .then(data => {
-      console.log('📡 Ответ от /api/admin/status:', data);
       const adminLink = document.getElementById('adminLink');
       if (adminLink) {
         if (data.isAdmin) {
           adminLink.style.display = 'flex';
-          console.log('✅ Кнопка админки ПОКАЗАНА');
+          console.log('✅ Кнопка админки показана');
         } else {
           adminLink.style.display = 'none';
-          console.log('❌ Кнопка админки скрыта (не админ)');
         }
-      } else {
-        console.warn('⚠️ Элемент #adminLink не найден в DOM');
       }
     })
-    .catch(err => {
-      console.error('❌ Ошибка проверки статуса админа:', err);
+    .catch(() => {
       const adminLink = document.getElementById('adminLink');
       if (adminLink) adminLink.style.display = 'none';
     });
 }
 
-// ----- Обработчики входа/регистрации (оставляем как есть) -----
-// ... (они уже есть в предыдущей версии)
+// ----- Вход -----
+const loginBtn = document.getElementById('loginBtn');
+const closeLoginBtn = document.getElementById('closeLoginBtn');
+const loginForm = document.getElementById('loginForm');
+const loginInput = document.getElementById('loginInput');
+const passwordInput = document.getElementById('passwordInput');
+const loginError = document.getElementById('loginError');
+const loginOverlayElem = document.getElementById('loginOverlay');
+
+if (loginBtn) {
+  loginBtn.addEventListener('click', () => {
+    if (loginOverlayElem) loginOverlayElem.classList.add('open');
+  });
+}
+if (closeLoginBtn) {
+  closeLoginBtn.addEventListener('click', () => {
+    if (loginOverlayElem) loginOverlayElem.classList.remove('open');
+  });
+}
+if (loginForm) {
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const login = loginInput.value;
+    const password = passwordInput.value;
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (loginOverlayElem) loginOverlayElem.classList.remove('open');
+          loginForm.reset();
+          loadUser();
+          loadCart();
+        } else {
+          if (loginError) loginError.textContent = data.error || 'Ошибка входа';
+        }
+      })
+      .catch(() => {
+        if (loginError) loginError.textContent = 'Ошибка соединения';
+      });
+  });
+}
+
+// ----- Регистрация -----
+const registerBtn = document.getElementById('registerBtn');
+const closeRegisterBtn = document.getElementById('closeRegisterBtn');
+const registerForm = document.getElementById('registerForm');
+const registerOverlayElem = document.getElementById('registerOverlay');
+const regFirstName = document.getElementById('regFirstName');
+const regLastName = document.getElementById('regLastName');
+const regLogin = document.getElementById('regLogin');
+const regPassword = document.getElementById('regPassword');
+const registerError = document.getElementById('registerError');
+
+if (registerBtn) {
+  registerBtn.addEventListener('click', () => {
+    if (registerOverlayElem) registerOverlayElem.classList.add('open');
+  });
+}
+if (closeRegisterBtn) {
+  closeRegisterBtn.addEventListener('click', () => {
+    if (registerOverlayElem) registerOverlayElem.classList.remove('open');
+  });
+}
+if (registerForm) {
+  registerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const firstName = regFirstName.value;
+    const lastName = regLastName.value;
+    const login = regLogin.value;
+    const password = regPassword.value;
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName, lastName, login, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (registerOverlayElem) registerOverlayElem.classList.remove('open');
+          registerForm.reset();
+          loadUser();
+          loadCart();
+        } else {
+          if (registerError) registerError.textContent = data.error || 'Ошибка регистрации';
+        }
+      })
+      .catch(() => {
+        if (registerError) registerError.textContent = 'Ошибка соединения';
+      });
+  });
+}
+
+// ----- Выход -----
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    fetch('/api/auth/logout', { method: 'POST' })
+      .then(() => {
+        loadUser();
+        loadCart();
+      });
+  });
+}
+
+// ----- Восстановление -----
+// (оставляем как есть, уже было)
 
 // ----- Корзина -----
 function loadCart() {
@@ -341,8 +440,8 @@ if (checkoutBtn) {
       return;
     }
     if (!currentUser) {
-      const loginOverlay2 = document.getElementById('loginOverlay');
-      if (loginOverlay2) loginOverlay2.classList.add('open');
+      const loginOverlayElem2 = document.getElementById('loginOverlay');
+      if (loginOverlayElem2) loginOverlayElem2.classList.add('open');
       return;
     }
     try {
@@ -499,7 +598,7 @@ function startNotifPolling() {
 }
 startNotifPolling();
 
-// ----- ФОН -----
+// ----- Фон -----
 function applyBackground() {
   fetch('/api/background')
     .then(r => r.json())
@@ -518,51 +617,9 @@ function applyBackground() {
     .catch(err => console.error('Ошибка загрузки фона:', err));
 }
 
-// ==========================================
-// ФОРСИРОВАННАЯ ПРОВЕРКА АДМИН-СТАТУСА
-// ==========================================
-
-// Функция проверки статуса (уже есть, но продублируем)
-function checkAdminStatus() {
-  fetch('/api/admin/status')
-    .then(res => res.json())
-    .then(data => {
-      console.log('🔍 Проверка статуса админа:', data);
-      const link = document.getElementById('adminLink');
-      if (link) {
-        if (data.isAdmin) {
-          link.style.display = 'flex';
-          console.log('✅ Кнопка админки ПОКАЗАНА');
-        } else {
-          link.style.display = 'none';
-          console.log('❌ Кнопка админки скрыта');
-        }
-      } else {
-        console.warn('⚠️ Элемент #adminLink не найден в DOM');
-      }
-    })
-    .catch(err => console.error('❌ Ошибка проверки статуса:', err));
-}
-
-// Переопределяем функцию loadUser, чтобы она вызывала checkAdminStatus()
-const originalLoadUser = loadUser;
-loadUser = function() {
-  originalLoadUser();
-  // Дополнительная проверка через 2 секунды (на случай, если сессия ещё не установилась)
-  setTimeout(checkAdminStatus, 500);
-  setTimeout(checkAdminStatus, 2000);
-};
-
-// Также вызываем при загрузке страницы
-window.addEventListener('load', function() {
-  setTimeout(checkAdminStatus, 1000);
-});
-
-// ----- ИНИЦИАЛИЗАЦИЯ -----
+// ----- Инициализация -----
 loadCategories();
 loadProducts();
 loadCart();
 loadUser();
 applyBackground();
-
-console.log('✅ Скрипт загружен. Кнопки входа и регистрации должны работать.');
